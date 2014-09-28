@@ -1,0 +1,35 @@
+#!/usr/bin/env ruby
+# Script to execute repetitive tasks
+lib = File.expand_path('../../lib', __FILE__)
+$LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
+
+require 'bundler/setup'
+require 'poster'
+
+# Accessing Bitcointalk
+
+require 'uri'
+require 'nokogiri'
+require 'faraday'
+require "pp"
+
+# URI to scrape (default: Bitcointalk giveaway thread)
+SCRAPE_URL = 'https://bitcointalk.org/index.php?topic=145506.46400'
+
+# Establish Faraday connection
+def connect uri
+  Faraday.new(:url => "#{uri.scheme}://#{uri.host}") do |faraday|
+    faraday.response :logger                  # log requests to STDOUT
+    faraday.adapter  Faraday.default_adapter  # make requests with Net::HTTP
+  end
+end
+
+# Extract contacts from a single page
+uri = URI.parse(SCRAPE_URL)
+conn = connect(uri)
+response = conn.get "#{uri.path}?#{uri.query}"
+doc = Nokogiri::HTML(response.body)
+posts = doc.xpath("//div[@class='post']").map {|p| p.children.reduce('') {|m,e| m + ' ' + e.content}}
+pp posts, posts.size
+users = doc.xpath("//tr/td/b/a").map {|p| p.children.first.content}
+pp users, users.size
