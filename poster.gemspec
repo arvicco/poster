@@ -10,7 +10,7 @@ Gem::Specification.new do |spec|
   spec.email         = ["arvicco@gmail.com"]
   spec.description   = %q{Poster is a tool that helps with repetitive tasks (like forum posting) automation.}
   spec.summary       = %q{Poster is a tool that helps with repetitive tasks (like forum posting) automation}
-  spec.homepage      = ""
+  spec.homepage      = "https://github.com/arvicco/poster"
   spec.license       = "MIT"
 
   spec.files         = `git ls-files`.split($/)
