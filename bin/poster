@@ -6,15 +6,12 @@ $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
 require 'bundler/setup'
 require 'poster'
 
-# Accessing Bitcointalk
+# Accessing Bitcointalk: just to test that Faraday works properly
 
 require 'uri'
-require 'nokogiri'
 require 'faraday'
+require 'nokogiri'
 require "pp"
-
-# URI to scrape (default: Bitcointalk giveaway thread)
-SCRAPE_URL = 'https://bitcointalk.org/index.php?topic=145506.46400'
 
 # Establish Faraday connection
 def connect uri
@@ -25,7 +22,7 @@ def connect uri
 end
 
 # Extract contacts from a single page
-uri = URI.parse(SCRAPE_URL)
+uri = URI.parse('https://bitcointalk.org/index.php?topic=145506.46400')
 conn = connect(uri)
 response = conn.get "#{uri.path}?#{uri.query}"
 doc = Nokogiri::HTML(response.body)
