@@ -1,6 +1,6 @@
 # Poster
 
-TODO: Write a gem description
+Poster is a tool that helps with repetitive tasks (like forum posting) automation.
 
 ## Installation
 

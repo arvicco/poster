@@ -8,8 +8,8 @@ Gem::Specification.new do |spec|
   spec.version       = Poster::VERSION
   spec.authors       = ["arvicco"]
   spec.email         = ["arvicco@gmail.com"]
-  spec.description   = %q{TODO: Write a gem description}
-  spec.summary       = %q{TODO: Write a gem summary}
+  spec.description   = %q{Poster is a tool that helps with repetitive tasks (like forum posting) automation.}
+  spec.summary       = %q{Poster is a tool that helps with repetitive tasks (like forum posting) automation}
   spec.homepage      = ""
   spec.license       = "MIT"
 
