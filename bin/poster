@@ -1,32 +1,89 @@
 #!/usr/bin/env ruby
 # Script to execute repetitive tasks
 lib = File.expand_path('../../lib', __FILE__)
+tmp = File.expand_path('../../tmp', __FILE__)
 $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
 
 require 'bundler/setup'
 require 'poster'
 
-# Accessing Bitcointalk: just to test that Faraday works properly
-
 require 'uri'
 require 'faraday'
+require 'faraday-cookie_jar'
 require 'nokogiri'
 require "pp"
 
 # Establish Faraday connection
-def connect uri
+def connect uri, encoding: :url_encoded
   Faraday.new(:url => "#{uri.scheme}://#{uri.host}") do |faraday|
+    faraday.request :multipart
+    faraday.request :url_encoded
+    # faraday.use FaradayMiddleware::FollowRedirects, limit: 3
+    faraday.use :cookie_jar
     faraday.response :logger                  # log requests to STDOUT
     faraday.adapter  Faraday.default_adapter  # make requests with Net::HTTP
   end
 end
 
 # Extract contacts from a single page
-uri = URI.parse('https://bitcointalk.org/index.php?topic=145506.46400')
+# uri = URI.parse('https://bitcointalk.org/index.php?topic=145506.46400')
+# conn = connect(uri)
+# response = conn.get "#{uri.path}?#{uri.query}"
+# doc = Nokogiri::HTML(response.body)
+# posts = doc.xpath("//div[@class='post']").map {|p| p.children.reduce('') {|m,e| m + ' ' + e.content}}
+# pp posts, posts.size
+# users = doc.xpath("//tr/td/b/a").map {|p| p.children.first.content}
+# pp users, users.size
+
+user, pass = *ARGV
+
+# Decorator for HTML pages
+class Nokogiri::HTML::Document
+  # <span style="font-size: 130%;" id="hellomember"> Hello <b>Arvicco</b></span>
+  def logged?
+    !self.xpath("//span[@id='hellomember']").empty?
+  end
+  
+  def input_field name
+  	unless self.xpath("//input[@name='#{name}']").empty?
+  	  self.xpath("//input[@name='#{name}']").first['value']
+  	end
+  end
+end
+
+# Login
+uri = URI.parse('https://bitcointalk.org/index.php?action=login2')
 conn = connect(uri)
-response = conn.get "#{uri.path}?#{uri.query}"
-doc = Nokogiri::HTML(response.body)
-posts = doc.xpath("//div[@class='post']").map {|p| p.children.reduce('') {|m,e| m + ' ' + e.content}}
-pp posts, posts.size
-users = doc.xpath("//tr/td/b/a").map {|p| p.children.first.content}
-pp users, users.size
+response = conn.post do |req|
+  req.headers['Content-Type'] = 'application/x-www-form-urlencoded'
+  req.url "#{uri.path}?#{uri.query}"
+  req. body = {user: user, passwrd: pass}
+end
+p response.status
+p response.body
+
+# Check board posting page first (to get sequence numbers)
+response = conn.get "/index.php?action=post;board=92.0" 
+
+p response.status
+post_page = Nokogiri::HTML(response.body)
+puts "Logged #{post_page.logged?}"
+# p post_page.xpath("//form[@name='postmodify']//input").each {|i| puts "#{i['name']}:#{i['value']}," }
+seqnum = post_page.input_field('seqnum')
+sc = post_page.input_field('sc')
+p seqnum, sc
+
+# Create new post
+response = conn.post do |req|
+  req.options.timeout = 5           # open/read timeout in seconds
+  req.headers['Content-Type'] = 'multipart/form-data'
+  req.url "/index.php?action=post2;start=0;board=92"
+  req.body = { topic: 0, subject: "Test номер #{rand(10)}", icon: "xx", message: "Test тестирование", 
+    notify: 0, do_watch: 0,  selfmod: 0, lock: 0, goback: 1, ns: "NS", post: "Post", 
+    additional_options: 0, sc: sc, seqnum: seqnum }
+end
+
+p response.status
+File.open("#{tmp}/response.html", 'w+') {|f| f.write(response.body) }
+new_page = Nokogiri::HTML(response.body)
+puts "Logged #{new_page.logged?}"
