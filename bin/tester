@@ -1,0 +1,16 @@
+#!/usr/bin/env ruby
+# Script to execute repetitive tasks
+lib = File.expand_path('../../lib', __FILE__)
+tmp = File.expand_path('../../tmp', __FILE__)
+$LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
+
+require 'bundler/setup'
+require 'poster'
+
+include Poster::Encoding
+
+output = xml_encode "Tes«t»—АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯабвгдеёжзийклмнопрстуфхцчшщъыьэюя"
+p output
+
+output = xml_encode( subj_encode( "Tes«t»—АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯабвгдеёжзийклмнопрстуфхцчшщъыьэюя"))
+p output
