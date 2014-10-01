@@ -8,8 +8,6 @@ require 'bundler/setup'
 require 'poster'
 require 'pp'
 
-include Poster::Encoding
-
 # output = xml_encode "Tes«t»—АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯабвгдеёжзийклмнопрстуфхцчшщъыьэюя"
 # p output
 # output = xml_encode( subj_encode( "Tes«t»—АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯабвгдеёжзийклмнопрстуфхцчшщъыьэюя"))

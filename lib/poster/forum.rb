@@ -1,7 +1,8 @@
-require "poster/encoding"
+require 'poster/encoding'
 require 'poster/site'
 
 module Poster
+  # Represents an internet forum (like Bitcointalk) 
   class Forum < Site
     include Poster::Encoding
 
