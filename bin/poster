@@ -16,7 +16,7 @@ require "pp"
 include Poster::Encoding
 
 # Establish Faraday connection
-def connect uri, encoding: :url_encoded
+def connect uri
   Faraday.new(:url => "#{uri.scheme}://#{uri.host}") do |faraday|
     faraday.request :multipart
     faraday.request :url_encoded
@@ -26,20 +26,6 @@ def connect uri, encoding: :url_encoded
     faraday.adapter  Faraday.default_adapter  # make requests with Net::HTTP
   end
 end
-
-# Extract contacts from a single page
-# uri = URI.parse('https://bitcointalk.org/index.php?topic=145506.46400')
-# conn = connect(uri)
-# response = conn.get "#{uri.path}?#{uri.query}"
-# doc = Nokogiri::HTML(response.body)
-# posts = doc.xpath("//div[@class='post']").map {|p| p.children.reduce('') {|m,e| m + ' ' + e.content}}
-# pp posts, posts.size
-# users = doc.xpath("//tr/td/b/a").map {|p| p.children.first.content}
-# pp users, users.size
-# p post_page.xpath("//form[@name='postmodify']//input").each {|i| puts "#{i['name']}:#{i['value']}," }
-
-# Get auth info from commandline args
-user, pass = *ARGV
 
 # Decorator for HTML pages
 class Nokogiri::HTML::Document
@@ -56,6 +42,11 @@ class Nokogiri::HTML::Document
 	  end
 	end
 end
+
+### The script begins here
+
+# Get auth info from commandline args
+user, pass = *ARGV
 
 # Login
 uri = URI.parse('https://bitcointalk.org/index.php?action=login2')
