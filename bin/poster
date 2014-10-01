@@ -13,6 +13,8 @@ require 'faraday-cookie_jar'
 require 'nokogiri'
 require "pp"
 
+include Poster::Encoding
+
 # Establish Faraday connection
 def connect uri, encoding: :url_encoded
   Faraday.new(:url => "#{uri.scheme}://#{uri.host}") do |faraday|
@@ -34,7 +36,9 @@ end
 # pp posts, posts.size
 # users = doc.xpath("//tr/td/b/a").map {|p| p.children.first.content}
 # pp users, users.size
+# p post_page.xpath("//form[@name='postmodify']//input").each {|i| puts "#{i['name']}:#{i['value']}," }
 
+# Get auth info from commandline args
 user, pass = *ARGV
 
 # Decorator for HTML pages
@@ -43,12 +47,14 @@ class Nokogiri::HTML::Document
   def logged?
     !self.xpath("//span[@id='hellomember']").empty?
   end
-  
-  def input_field name
-  	unless self.xpath("//input[@name='#{name}']").empty?
-  	  self.xpath("//input[@name='#{name}']").first['value']
-  	end
-  end
+	
+	def extract_fields *names
+		names.map do |name|
+	    unless self.xpath("//input[@name='#{name}']").empty?
+	  	  self.xpath("//input[@name='#{name}']").first['value']
+		  end
+	  end
+	end
 end
 
 # Login
@@ -57,33 +63,41 @@ conn = connect(uri)
 response = conn.post do |req|
   req.headers['Content-Type'] = 'application/x-www-form-urlencoded'
   req.url "#{uri.path}?#{uri.query}"
-  req. body = {user: user, passwrd: pass}
+  req.body = {user: user, passwrd: pass}
 end
 p response.status
-p response.body
 
 # Check board posting page first (to get sequence numbers)
 response = conn.get "/index.php?action=post;board=92.0" 
-
 p response.status
+
 post_page = Nokogiri::HTML(response.body)
 puts "Logged #{post_page.logged?}"
-# p post_page.xpath("//form[@name='postmodify']//input").each {|i| puts "#{i['name']}:#{i['value']}," }
-seqnum = post_page.input_field('seqnum')
-sc = post_page.input_field('sc')
-p seqnum, sc
+seqnum, sc = post_page.extract_fields 'seqnum', 'sc'
 
 # Create new post
+subj = xml_encode(subj_encode("АВЕЁЗИЙКМНОПРСТУХЧЪЫЬабеёзийкмнопрстуфхцчъыья")) 
+message = xml_encode \
+  "Tes«t»—\nАБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯ\nабвгдеёжзийклмнопрстуфхцчшщъыьэюя" +
+  "[img width=200]http://www.altcoinfever.com/wp-content/uploads/2014/03/Gold-Bitcoin.png[/img]"
+
 response = conn.post do |req|
   req.options.timeout = 5           # open/read timeout in seconds
-  req.headers['Content-Type'] = 'multipart/form-data'
+  req.headers['Content-Type'] = 'multipart/form-data; charset=ISO-8859-1'
   req.url "/index.php?action=post2;start=0;board=92"
-  req.body = { topic: 0, subject: "Test номер #{rand(10)}", icon: "xx", message: "Test тестирование", 
+  req.body = { topic: 0, subject: subj, icon: "exclamation", message: message,
     notify: 0, do_watch: 0,  selfmod: 0, lock: 0, goback: 1, ns: "NS", post: "Post", 
     additional_options: 0, sc: sc, seqnum: seqnum }
 end
 
 p response.status
+pp response.headers
+new_topic = response.headers['location'] 
+raise "No redirect to posted topic!" unless new_topic && response.status == 302
+
+# Check new topic page
+response = conn.get new_topic 
+
 File.open("#{tmp}/response.html", 'w+') {|f| f.write(response.body) }
 new_page = Nokogiri::HTML(response.body)
 puts "Logged #{new_page.logged?}"
