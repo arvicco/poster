@@ -1,0 +1,19 @@
+#!/usr/bin/env ruby
+# Script to execute repetitive tasks
+lib = File.expand_path('../../lib', __FILE__)
+tmp = File.expand_path('../../tmp', __FILE__)
+$LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
+
+require 'bundler/setup'
+require 'poster'
+require 'pp'
+
+OpenSSL::SSL::VERIFY_PEER = OpenSSL::SSL::VERIFY_NONE
+
+url = ARGV.first
+# newsfeed = Poster::Rss.new url: 'https://bitnovosti.com/'
+news = Poster::Rss.new url: url
+
+pp news.feed.items.first
+
+# File.open("#{tmp}/feed.html", 'w+') {|f| f.write(resp.body) }
