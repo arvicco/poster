@@ -1,6 +1,5 @@
 require "poster/version"
-require "poster/encoding"
-require "poster/site"
+require "poster/forum"
 
 module Poster
   # Your code goes here...

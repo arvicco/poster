@@ -17,16 +17,16 @@ include Poster::Encoding
 
 user, pass = *ARGV
 
-bitcointalk = Poster::Site.new url: 'https://bitcointalk.org/', user: user, pass: pass,
+bitcointalk = Poster::Forum.new url: 'https://bitcointalk.org/', user: user, pass: pass,
  login_path: "/index.php?action=login2"
 
 resp = bitcointalk.new_topic board: 92,
   subj: "Россия будет создавать дублирующие элементы интернета", 
   msg:
   "http://top.rbc.ru/politics/01/10/2014/542bfcd0cbb20f1aa8430198 \n" +
-  "[img width=200]http://pics.v6.top.rbc.ru/v6_top_pics/media/img/3/40/284121733470403.jpg[/img]\n" +
   "[quote]Решения о мерах по повышению информационной безопасности в российском сегменте интернета были приняты на закрытом заседании Совета безопасности России. Владимир Путин пообещал не устанавливать тотальный контроль над интернетом.[/quote]\n" +
-  "Шокирует."
+  "[img width=300]http://pics.v6.top.rbc.ru/v6_top_pics/media/img/3/40/284121733470403.jpg[/img]\n" +
+  "Обещать не значит жениться."
 
 File.open("#{tmp}/resp.html", 'w+') {|f| f.write(resp.body) }
 puts "Logged #{bitcointalk.logged?}"
