@@ -4,8 +4,9 @@ require 'faraday-cookie_jar'
 require 'nokogiri'
 
 module Poster
-	# Site is a thin wrapper around Faraday::Connection
+  # Site is a thin wrapper around Faraday::Connection
   class Site
+    include Poster::Encoding
 
     attr_accessor :url, :opts, :conn, :response, :page
 

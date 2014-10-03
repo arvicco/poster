@@ -1,3 +1,6 @@
+require 'cgi'
+require 'nokogiri'
+
 module Poster
   module Encoding
 
@@ -72,9 +75,19 @@ module Poster
         Э	1069
         Ю	1070
         Я	1071
-        « 171
-        » 187
-        — 45
+    ]]
+
+    # List of weird Unicode chars that show up in Russian texts 
+    CONVERTIBLES = Hash[
+      *%W[
+        « "
+        » "
+        – -
+        — -
+        − -
+        — -
+        − -
+        \xC2\xA0 \x20
     ]]
 
     HOMOGLYPHS = Hash[
@@ -106,13 +119,22 @@ module Poster
         « "
         » "
         — -
+        − -
     ]]
 
-    # Encode Russian UTF-8 string to XML Entities format
+    # Encode Russian UTF-8 string to XML Entities format, 
+    # converting weird Unicode chars along the way
     def xml_encode string
       puts string.each_char.size
       string.each_char.map do |p|
-        XML_ENTITIES[p] ? "&##{XML_ENTITIES[p]};" : p
+        case 
+        when CONVERTIBLES[p]
+          CONVERTIBLES[p]
+        when XML_ENTITIES[p]
+          "&##{XML_ENTITIES[p]};"
+        else
+          p
+        end
       end.reduce(:+)
     end
 
@@ -122,6 +144,10 @@ module Poster
       string.each_char.map do |p|
         HOMOGLYPHS[p] ? HOMOGLYPHS[p] : p
       end.reduce(:+)
+    end
+
+    def strip_tags string
+      Nokogiri::HTML(CGI.unescapeHTML(string)).content
     end
   end
 end

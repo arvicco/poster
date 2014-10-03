@@ -1,19 +1,55 @@
 #!/usr/bin/env ruby
-# Script to execute repetitive tasks
+# Script to repost feed news item to bitcointalk
+
 lib = File.expand_path('../../lib', __FILE__)
 tmp = File.expand_path('../../tmp', __FILE__)
+config_file = File.expand_path('../../config/poster.yml', __FILE__)
 $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
 
 require 'bundler/setup'
 require 'poster'
+require 'yaml'
 require 'pp'
 
+include Poster::Encoding
 OpenSSL::SSL::VERIFY_PEER = OpenSSL::SSL::VERIFY_NONE
 
-url = ARGV.first
-# newsfeed = Poster::Rss.new url: 'https://bitnovosti.com/'
-news = Poster::Rss.new url: url
+num = (ARGV.first || 0).to_i
+config = YAML.load_file(config_file)[:dev]
 
-pp news.feed.items.first
+news = Poster::Rss.new config[:zapier_feed]
+
+title, link, img, text = news.extract_data news.feed.items[num]
+
+bitcointalk = Poster::Forum.new config[:bitcointalk]
+
+# p t
+# pp t
+# p t.force_encoding('ASCII-8BIT')
+# p "с, он с".force_encoding('ASCII-8BIT')
+# a = %W[\xC2\xA0 \x20]
+# p a
+# p a[1]
+# p a[1].force_encoding('ASCII-8BIT')
+# p "\xC2\xA0".force_encoding('ASCII-8BIT')
+
+# t = text.match(/с,...../)[0]
+# t1 = "с, он с"
+# p xml_encode(t)
+# p xml_encode(t1)
+# p xml_encode(t).force_encoding('ASCII-8BIT')
+# p xml_encode(t1).force_encoding('ASCII-8BIT')
+# p CONVERTIBLES.keys.last
+# t.each_char {|c| p c}
+# t1.each_char {|c| p c}
+
+# exit
+
+bitcointalk.new_topic \
+  board: :trash,
+  subj: title, 
+  msg:  "#{link}\n" +
+  (img ? "[img width=345]#{img}[/img]\n" : "") +
+  "[quote]#{text}[/quote]\n"
 
 # File.open("#{tmp}/feed.html", 'w+') {|f| f.write(resp.body) }
