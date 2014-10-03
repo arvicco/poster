@@ -34,7 +34,7 @@ module Poster
       short_text = strip_tags(text)[0..text_limit]
       
       # Normalize newlines
-      short_text = short_text.gsub(/\n+/,"\n\n")
+      short_text = short_text.gsub(/\A\s+/,"").gsub(/\n+/,"\n\n")
       
       # Right-strip to end of last paragraph
       short_text = short_text[0..short_text.rindex(/\.\n/)]

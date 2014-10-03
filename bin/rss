@@ -45,8 +45,10 @@ bitcointalk = Poster::Forum.new config[:bitcointalk]
 
 # exit
 
+board = (ARGV[1] || :trash).to_sym
+
 bitcointalk.new_topic \
-  board: :trash,
+  board: board,
   subj: title, 
   msg:  "#{link}\n" +
   (img ? "[img width=345]#{img}[/img]\n" : "") +
