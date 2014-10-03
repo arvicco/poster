@@ -19,7 +19,7 @@ config = YAML.load_file(config_file)[:dev]
 
 news = Poster::Rss.new config[:zapier_feed]
 
-title, link, img, text = news.extract_data news.feed.items[num]
+title, link, img, text, categories = news.extract_data news.feed.items[num]
 
 bitcointalk = Poster::Forum.new config[:bitcointalk]
 
